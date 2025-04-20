@@ -5,7 +5,7 @@ from colorama import Fore, Style, init
 from dotenv import load_dotenv
 import questionary
 
-from llm.model import LLM_ORDER, OLLAMA_LLM_ORDER, ModelProvider, get_model_info
+from llm.models import LLM_ORDER, OLLAMA_LLM_ORDER, ModelProvider, get_model_info
 from utils.ollama import ensure_ollama_and_model
 
 
