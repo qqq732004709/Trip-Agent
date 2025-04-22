@@ -3,6 +3,7 @@ from typing import List, Dict
 from graph.state import AgentState
 from utils.llm import call_llm
 from utils.progress import progress
+from langchain_core.messages import HumanMessage
 import json
 
 class ItineraryPlan(BaseModel):
@@ -28,9 +29,8 @@ def itinerary_agent(state: AgentState):
     if not validation["valid"]:
         return {"error": validation["reason"]}
 
-    progress.update_status("itinerary_agent",status="Generating itinerary")
+    progress.update_status("itinerary_agent", status="Generating itinerary")
     itinerary_output = generate_itinerary_output(
-        user_request=state,
         destination=destination,
         start_date=start_date,
         end_date=end_date,
@@ -39,7 +39,10 @@ def itinerary_agent(state: AgentState):
         model_provider=state["metadata"]["model_provider"],
     )
 
-    return itinerary_output
+    # Wrap results in a single message
+    message = HumanMessage(content=json.dumps(itinerary_output.dict()), name="itinerary_agent")
+
+    return {"messages": [message], "data": state["data"]}
 
 def validate_travel_request(request: Dict) -> Dict:
     """Validate the travel request parameters."""
@@ -52,7 +55,6 @@ def validate_travel_request(request: Dict) -> Dict:
     return {"valid": True}
 
 def generate_itinerary_output(
-    user_request: Dict,
     destination: str,
     start_date: str,
     end_date: str,
