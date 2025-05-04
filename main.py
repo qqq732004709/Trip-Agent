@@ -1,153 +1,54 @@
-# Load environment variables from .env file
-import argparse
-import sys
-from colorama import Fore, Style, init
+# main.py
+
+import streamlit as st
 from dotenv import load_dotenv
-import questionary
-from langgraph.graph import END, StateGraph
-from langchain_core.messages import HumanMessage
-from graph.state import AgentState
-from llm.models import LLM_ORDER, OLLAMA_LLM_ORDER, ModelProvider, get_model_info
-from utils.progress import progress
-from utils.ollama import ensure_ollama_and_model
-from agent.itinerary_agent import itinerary_agent
+from runner import run_itinerary
+from utils.model_selector import select_model
 
-def start(state: AgentState):
-    """Initialize the workflow with the input message."""
-    return state
-
-def create_workflow():
-    """Create the workflow with selected analysts."""
-    workflow = StateGraph(AgentState)
-    workflow.add_node("start_node", start)
-
-    # Connect start_node to itinerary_agent
-    workflow.add_node("itinerary_agent", itinerary_agent)
-    workflow.add_edge("start_node", "itinerary_agent")
-    workflow.add_edge("itinerary_agent", END)
-
-    workflow.set_entry_point("start_node")
-    return workflow
-
-def run_itinerary(model_name: str, model_provider: str):
-    """Run the itinerary workflow."""
-    try:
-        # Start progress tracking
-        progress.start()
-        progress.update_status("itinerary_agent", status="Initializing")
-
-        # Create the workflow
-        workflow = create_workflow()
-        agent = workflow.compile()
-        progress.update_status("itinerary_agent", status="Workflow created")
-
-        # Prepare user input for the itinerary agent
-        user_input = {
-            "destination": "Qingdao",
-            "start_date": "2025-05-01",
-            "end_date": "2025-05-03",
-            "preferences": {
-                "activities": ["seafood", "sunrise watching", "beer"],
-                "budget": "medium"
-            }
-        }
-
-        # Update progress status
-        progress.update_status("itinerary_agent", status="Processing request")
-
-        # Invoke the workflow
-        final_state = agent.invoke(
-            {
-                "messages": [
-                    HumanMessage(
-                        content="Plan an itinerary based on the provided travel details.",
-                    )
-                ],
-                "data": {
-                    "travel_details": user_input,
-                },
-                "metadata": {
-                    "model_name": model_name,
-                    "model_provider": model_provider,
-                },
-            },
-        )
-
-        progress.update_status("itinerary_agent", status="Done")
-        return {
-            "itinerary": final_state["messages"][-1].content,
-        }
-    except Exception as e:
-        progress.update_status("itinerary_agent", status=f"Error: {str(e)}")
-        raise
-
+# Load environment variables
 load_dotenv()
 
-init(autoreset=True)
+# Streamlit page setup
+st.set_page_config(page_title="旅行助手 Trip-Agent", layout="wide")
+st.title("🧳 旅行助手 Trip-Agent")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run the Trip Agent system")
-    parser.add_argument("--show-reasoning", action="store_true", help="Show reasoning from each agent")
-    parser.add_argument(
-        "--show-agent-graph", action="store_true", help="Show the agent graph"
-    )
-    parser.add_argument(
-        "--ollama", action="store_true", help="Use Ollama for local LLM inference"
-    )
+# 初始化聊天历史
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    args = parser.parse_args()
+# 选择模型（从 utils 封装中调用）
+model_name, model_provider = select_model(mode="streamlit", st=st)
 
-    # Select LLM model based on whether Ollama is being used
-    model_choice = None
-    model_provider = None
+# 显示历史消息
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-    if args.ollama:
-        print(f"{Fore.CYAN}Using Ollama for local LLM inference.{Style.RESET_ALL}")
-        model_choice = questionary.select(
-            "Select your Ollama model:",
-            choices=[questionary.Choice(display, value=value) for display, value, _ in OLLAMA_LLM_ORDER],
-            style=questionary.Style([
-                ("selected", "fg:green bold"),
-                ("pointer", "fg:green bold"),
-                ("highlighted", "fg:green"),
-                ("answer", "fg:green bold"),
-            ])
-        ).ask()
+# 主逻辑：处理用户输入
+if user_prompt := st.chat_input("请输入旅行需求，例如：我想去成都玩三天，喜欢美食和文化"):
 
-        if not model_choice:
-            print("\n\nInterrupt received. Exiting...")
-            sys.exit(0)
+    # 显示用户消息
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
 
-        if not ensure_ollama_and_model(model_choice):
-            print(f"{Fore.RED}Cannot proceed without Ollama and the selected model.{Style.RESET_ALL}")
-            sys.exit(1)
+    # 响应占位符
+    with st.chat_message("assistant"):
+        placeholder = st.empty()
+        placeholder.markdown("🧭 正在生成旅行行程，请稍候...")
 
-        model_provider = ModelProvider.OLLAMA.value
-        print(f"\nSelected {Fore.CYAN}Ollama{Style.RESET_ALL} model: {Fore.GREEN + Style.BRIGHT}{model_choice}{Style.RESET_ALL}\n")
-    else:
-        model_choice = questionary.select(
-            "Select your LLM model:",
-            choices=[questionary.Choice(display, value=value) for display, value, _ in LLM_ORDER],
-            style=questionary.Style([
-                ("selected", "fg:green bold"),
-                ("pointer", "fg:green bold"),
-                ("highlighted", "fg:green"),
-                ("answer", "fg:green bold"),
-            ])
-        ).ask()
+        try:
+            # 同步调用 runner.py 中封装的流程
+            itinerary_markdown = run_itinerary(
+                input_text=user_prompt,
+                model_name=model_name,
+                model_provider=model_provider
+            )
 
-        if not model_choice:
-            print("\n\nInterrupt received. Exiting...")
-            sys.exit(0)
-        else:
-            model_info = get_model_info(model_choice)
-            if model_info:
-                model_provider = model_info.provider.value
-                print(f"\nSelected {Fore.CYAN}{model_provider}{Style.RESET_ALL} model: {Fore.GREEN + Style.BRIGHT}{model_choice}{Style.RESET_ALL}\n")
-            else:
-                model_provider = "Unknown"
-                print(f"\nSelected model: {Fore.GREEN + Style.BRIGHT}{model_choice}{Style.RESET_ALL}\n")
+            placeholder.markdown(itinerary_markdown)
+            st.session_state.messages.append({"role": "assistant", "content": itinerary_markdown})
 
-    # Run the itinerary workflow
-    result = run_itinerary(model_name=model_choice, model_provider=model_provider)
-    print(f"\nGenerated Itinerary:\n{Fore.GREEN}{result['itinerary']}{Style.RESET_ALL}")
+        except Exception as e:
+            error_msg = f"❌ 出错了：{e}"
+            placeholder.markdown(error_msg)
+            st.session_state.messages.append({"role": "assistant", "content": error_msg})
