@@ -13,11 +13,11 @@ class ItineraryRequest(BaseModel):
     preferences: Dict[str, List[str] | str]
 
 def intent_agent(state: AgentState):
-    progress.update_status("intent_agent", status="Start processing user input")
+    progress().update_status("intent_agent", status="Start processing user input")
 
     user_input = state["messages"][-1].content
 
-    progress.update_status("intent_agent", status="Parsing user input")
+    progress().update_status("intent_agent", status="Parsing user input")
     itinerary_output = parse_user_input(
         user_input,
         model_name=state["metadata"]["model_name"],
@@ -29,7 +29,7 @@ def intent_agent(state: AgentState):
     # Wrap results in a single message
     message = HumanMessage(content=json.dumps(itinerary_output.dict()), name="intent_agent")
 
-    progress.update_status("intent_agent", status="Processing complete")
+    progress().update_status("intent_agent", status="done")
 
     return {"messages": [message], "data": state["data"]}
 

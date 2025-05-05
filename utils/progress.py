@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict
 from rich.console import Console
 from rich.table import Table
 from rich.live import Live
@@ -7,11 +7,13 @@ from rich.style import Style
 
 console = Console()
 
+# 全局变量
+_progress_instance = None
 
 class AgentProgress:
     def __init__(self, mode: str = "cli", st_ref=None):
-        self.mode = mode  # "cli" or "streamlit"
-        self.st = st_ref  # 仅 streamlit 模式下需要传入 st 模块
+        self.mode = mode
+        self.st = st_ref
         self.agent_status: Dict[str, str] = {}
         self.started = False
 
@@ -70,5 +72,17 @@ class AgentProgress:
                 self.st.sidebar.write(f"**{name}**: {status}")
 
 
-# 默认实例（CLI 模式）
-progress = AgentProgress(mode="streamlit")
+
+def init_progress(mode="cli", st_ref=None):
+    global _progress_instance
+    _progress_instance = AgentProgress(mode=mode, st_ref=st_ref)
+
+def get_progress() -> AgentProgress:
+    global _progress_instance
+    if _progress_instance is None:
+        raise RuntimeError("Progress not initialized. Call init_progress() first.")
+    return _progress_instance
+
+def progress() -> AgentProgress:
+    """语义简洁的别名，让调用者可以用 progress().update_status(...)。"""
+    return get_progress()

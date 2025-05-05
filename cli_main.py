@@ -6,13 +6,15 @@ from utils.model_selector import select_model
 
 from langchain_core.messages import HumanMessage
 
+from utils.progress import init_progress
+
 # 调试用：加载 .env 文件
 load_dotenv()
 
 def main():
     # CLI 模式选择模型
     model_name, model_provider = select_model(mode="cli")
-
+    init_progress(mode="cli")
     # 获取用户输入（或写死测试用）
     print("\n请输入旅行需求，例如：我想去杭州玩三天，喜欢美食和古镇")
     #user_input = input("旅行需求： ").strip()

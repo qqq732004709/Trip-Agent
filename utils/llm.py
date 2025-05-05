@@ -59,7 +59,7 @@ def call_llm(
                 
         except Exception as e:
             if agent_name:
-                progress.update_status(agent_name, None, f"Error - retry {attempt + 1}/{max_retries}")
+                progress().update_status(agent_name, f"Error - retry {attempt + 1}/{max_retries}")
             
             if attempt == max_retries - 1:
                 print(f"Error in LLM call after {max_retries} attempts: {e}")

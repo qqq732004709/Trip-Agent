@@ -2,6 +2,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from runner import run_itinerary
 from utils.model_selector import select_model
+from utils.progress import init_progress
 
 # Load environment variables
 load_dotenv()
@@ -9,6 +10,9 @@ load_dotenv()
 # Streamlit page setup
 st.set_page_config(page_title="旅行助手 Trip-Agent", layout="wide")
 st.title("🧳 旅行助手 Trip-Agent")
+
+# 初始化进度（必须早于 runner 调用）
+init_progress(mode="streamlit", st_ref=st)
 
 # 初始化聊天历史
 if "messages" not in st.session_state:

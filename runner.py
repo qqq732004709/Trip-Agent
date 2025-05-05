@@ -12,7 +12,7 @@ def run_itinerary(input_text: str, model_name: str, model_provider: str):
     # 获取 runnable 流程
     runnable = get_runnable()
 
-    progress.start()
+    progress().start()
     # 运行流程
     # 构建初始状态
     state = {
@@ -34,5 +34,5 @@ def run_itinerary(input_text: str, model_name: str, model_provider: str):
     itinerary = result["data"].get("itinerary_markdown", "⚠️ 未生成行程")
     print(f"\n生成的行程单：\n{Fore.GREEN}{itinerary}{Style.RESET_ALL}")
 
-    progress.stop()
+    progress().stop()
     return itinerary
