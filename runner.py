@@ -3,7 +3,6 @@
 from langchain_core.messages import HumanMessage
 from graph.workflow import get_runnable
 from colorama import Fore, Style
-import os
 
 def run_itinerary(input_text: str, model_name: str, model_provider: str):
     """

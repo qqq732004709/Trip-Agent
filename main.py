@@ -1,5 +1,3 @@
-# main.py
-
 import streamlit as st
 from dotenv import load_dotenv
 from runner import run_itinerary
