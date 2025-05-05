@@ -1,66 +1,51 @@
-from rich.console import Console
-from rich.live import Live
-from rich.table import Table
-from rich.style import Style
-from rich.text import Text
 from typing import Dict, Optional
+from rich.console import Console
+from rich.table import Table
+from rich.live import Live
+from rich.text import Text
+from rich.style import Style
 
 console = Console()
 
 
 class AgentProgress:
-    """Manages progress tracking for multiple agents."""
-
-    def __init__(self):
-        self.agent_status: Dict[str, Dict[str, str]] = {}
-        self.table = Table(show_header=False, box=None, padding=(0, 1))
-        self.live = Live(self.table, console=console, refresh_per_second=4)
+    def __init__(self, mode: str = "cli", st_ref=None):
+        self.mode = mode  # "cli" or "streamlit"
+        self.st = st_ref  # 仅 streamlit 模式下需要传入 st 模块
+        self.agent_status: Dict[str, str] = {}
         self.started = False
 
+        if self.mode == "cli":
+            self.table = Table(show_header=False, box=None, padding=(0, 1))
+            self.live = Live(self.table, console=console, refresh_per_second=4)
+
     def start(self):
-        """Start the progress display."""
-        if not self.started:
+        if self.mode == "cli" and not self.started:
             self.live.start()
             self.started = True
 
     def stop(self):
-        """Stop the progress display."""
-        if self.started:
+        if self.mode == "cli" and self.started:
             self.live.stop()
             self.started = False
 
-    def update_status(self, agent_name: str, ticker: Optional[str] = None, status: str = ""):
-        """Update the status of an agent."""
-        if agent_name not in self.agent_status:
-            self.agent_status[agent_name] = {"status": "", "ticker": None}
-
-        if ticker:
-            self.agent_status[agent_name]["ticker"] = ticker
-        if status:
-            self.agent_status[agent_name]["status"] = status
-
+    def update_status(self, agent_name: str, status: str = ""):
+        self.agent_status[agent_name] = status
         self._refresh_display()
 
     def _refresh_display(self):
-        """Refresh the progress display."""
+        if self.mode == "cli":
+            self._render_cli()
+        elif self.mode == "streamlit":
+            self._render_streamlit()
+
+    def _render_cli(self):
         self.table.columns.clear()
         self.table.add_column(width=100)
 
-        # Sort agents with Risk Management and Portfolio Management at the bottom
-        def sort_key(item):
-            agent_name = item[0]
-            if "risk_management" in agent_name:
-                return (2, agent_name)
-            elif "portfolio_management" in agent_name:
-                return (3, agent_name)
-            else:
-                return (1, agent_name)
+        for agent_name in sorted(self.agent_status):
+            status = self.agent_status[agent_name]
 
-        for agent_name, info in sorted(self.agent_status.items(), key=sort_key):
-            status = info["status"]
-            ticker = info["ticker"]
-
-            # Create the status text with appropriate styling
             if status.lower() == "done":
                 style = Style(color="green", bold=True)
                 symbol = "✓"
@@ -74,14 +59,16 @@ class AgentProgress:
             agent_display = agent_name.replace("_agent", "").replace("_", " ").title()
             status_text = Text()
             status_text.append(f"{symbol} ", style=style)
-            status_text.append(f"{agent_display:<20}", style=Style(bold=True))
-
-            if ticker:
-                status_text.append(f"[{ticker}] ", style=Style(color="cyan"))
-            status_text.append(status, style=style)
+            status_text.append(f"{agent_display:<20} {status}", style=style)
 
             self.table.add_row(status_text)
 
+    def _render_streamlit(self):
+        if self.st:
+            self.st.sidebar.markdown("### 🟢 Agent 状态")
+            for name, status in self.agent_status.items():
+                self.st.sidebar.write(f"**{name}**: {status}")
 
-# Create a global instance
-progress = AgentProgress()
+
+# 默认实例（CLI 模式）
+progress = AgentProgress(mode="streamlit")

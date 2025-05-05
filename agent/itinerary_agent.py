@@ -18,18 +18,20 @@ class ItineraryPlans(BaseModel):
 
 def itinerary_agent(state: AgentState):
     """Creates a travel itinerary based on user preferences."""
+    progress.update_status("itinerary_agent", status="Start processing travel itinerary")
+
     travel_details = state.get('data').get('travel_details')
     destination = travel_details.get("destination")
     start_date = travel_details.get("start_date")
     end_date = travel_details.get("end_date")
     preferences = travel_details.get("preferences", {})
 
-    progress.update_status("itinerary_agent", status="Validating request")
+    progress.update_status("itinerary_agent", status="Validating travel request")
     validation = validate_travel_request(travel_details)
     if not validation["valid"]:
         return {"error": validation["reason"]}
 
-    progress.update_status("itinerary_agent", status="Generating itinerary")
+    progress.update_status("itinerary_agent", status="Generating travel itinerary")
     itinerary_output = generate_itinerary_output(
         destination=destination,
         start_date=start_date,
@@ -39,12 +41,14 @@ def itinerary_agent(state: AgentState):
         model_provider=state["metadata"]["model_provider"],
     )
 
+    progress.update_status("itinerary_agent", status="Converting itinerary to markdown")
     # Convert itinerary to markdown format
     itinerary_markdown = convert_plans_to_markdown(itinerary_output)
 
     # Add markdown to data
     state["data"]["itinerary_markdown"] = itinerary_markdown
 
+    progress.update_status("itinerary_agent", status="Processing complete")
     # Wrap results in a single message
     message = HumanMessage(content=json.dumps(itinerary_output.dict()), name="itinerary_agent")
 
