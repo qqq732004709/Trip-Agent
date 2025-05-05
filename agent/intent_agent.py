@@ -23,8 +23,10 @@ def intent_agent(state: AgentState):
         model_provider=state["metadata"]["model_provider"],
     )
 
+    state["data"]["travel_details"] = itinerary_output.dict()
+
     # Wrap results in a single message
-    message = HumanMessage(content=json.dumps(itinerary_output.dict()), name="itinerary_agent")
+    message = HumanMessage(content=json.dumps(itinerary_output.dict()), name="intent_agent")
 
     return {"messages": [message], "data": state["data"]}
 

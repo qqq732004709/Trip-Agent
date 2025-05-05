@@ -15,8 +15,8 @@ def main():
 
     # 获取用户输入（或写死测试用）
     print("\n请输入旅行需求，例如：我想去杭州玩三天，喜欢美食和古镇")
-    user_input = input("旅行需求： ").strip()
-
+    #user_input = input("旅行需求： ").strip()
+    user_input = "旅行需求： 我想去广州玩三天，喜欢美食和广州塔还有长隆动物园"
     if not user_input:
         print("❌ 输入为空，退出")
         return
