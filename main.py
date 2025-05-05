@@ -11,9 +11,6 @@ load_dotenv()
 st.set_page_config(page_title="旅行助手 Trip-Agent", layout="wide")
 st.title("🧳 旅行助手 Trip-Agent")
 
-# 初始化进度（必须早于 runner 调用）
-init_progress(mode="streamlit", st_ref=st)
-
 # 初始化聊天历史
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -37,7 +34,7 @@ if user_prompt := st.chat_input("请输入旅行需求，例如：我想去成�
     # 响应占位符
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        placeholder.markdown("🧭 正在生成旅行行程，请稍候...")
+        init_progress(mode="streamlit", st_ref=st, ui_placeholder=placeholder)
 
         try:
             # 同步调用 runner.py 中封装的流程

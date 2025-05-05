@@ -7,13 +7,15 @@ from rich.style import Style
 
 console = Console()
 
-# 全局变量
+# 全局缓存实例
 _progress_instance = None
 
+
 class AgentProgress:
-    def __init__(self, mode: str = "cli", st_ref=None):
-        self.mode = mode
-        self.st = st_ref
+    def __init__(self, mode: str = "cli", st_ref=None, ui_placeholder=None):
+        self.mode = mode              # "cli" or "streamlit"
+        self.st = st_ref             # streamlit module 引用
+        self.chat_placeholder = ui_placeholder  # 主 UI 区域的 placeholder，由外部提供
         self.agent_status: Dict[str, str] = {}
         self.started = False
 
@@ -66,16 +68,27 @@ class AgentProgress:
             self.table.add_row(status_text)
 
     def _render_streamlit(self):
-        if self.st:
-            self.st.sidebar.markdown("### 🟢 Agent 状态")
-            for name, status in self.agent_status.items():
-                self.st.sidebar.write(f"**{name}**: {status}")
+        if not self.chat_placeholder:
+            return
 
+        lines = ["#####🧭 正在生成旅行行程，请稍候..."," #####🧠 Agent 状态"]
+        for name, status in self.agent_status.items():
+            symbol = "⋯"
+            if status.lower() == "done":
+                symbol = "✅"
+            elif status.lower() == "error":
+                symbol = "❌"
 
+            display_name = name.replace("_agent", "").replace("_", " ").title()
+            lines.append(f"- {symbol} **{display_name}**: {status}")
 
-def init_progress(mode="cli", st_ref=None):
+        markdown = "\n".join(lines)
+        self.chat_placeholder.markdown(markdown)
+
+def init_progress(mode="cli", st_ref=None, ui_placeholder=None):
+    """在 main 中初始化：支持 mode + streamlit placeholder"""
     global _progress_instance
-    _progress_instance = AgentProgress(mode=mode, st_ref=st_ref)
+    _progress_instance = AgentProgress(mode=mode, st_ref=st_ref, ui_placeholder=ui_placeholder)
 
 def get_progress() -> AgentProgress:
     global _progress_instance
@@ -84,5 +97,4 @@ def get_progress() -> AgentProgress:
     return _progress_instance
 
 def progress() -> AgentProgress:
-    """语义简洁的别名，让调用者可以用 progress().update_status(...)。"""
     return get_progress()

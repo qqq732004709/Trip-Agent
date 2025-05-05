@@ -32,7 +32,5 @@ def run_itinerary(input_text: str, model_name: str, model_provider: str):
 
     # 打印并返回行程单
     itinerary = result["data"].get("itinerary_markdown", "⚠️ 未生成行程")
-    print(f"\n生成的行程单：\n{Fore.GREEN}{itinerary}{Style.RESET_ALL}")
-
     progress().stop()
     return itinerary
