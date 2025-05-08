@@ -1,0 +1,19 @@
+{
+    "configurations": [
+      {
+        "name": "🧪 Debug pytest test",
+        "type": "python",
+        "request": "launch",
+        "module": "pytest",
+        "cwd": "${workspaceFolder}",
+        "justMyCode": false,
+        "args": [
+          "-v",
+          "-s"
+          "${file}"
+        ],
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+  
