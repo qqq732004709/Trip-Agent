@@ -3,12 +3,12 @@
 from dotenv import load_dotenv
 import os
 from langchain_core.messages import HumanMessage, AIMessage
-from utils.model_selector import select_model
-from utils.progress import init_progress, progress
+from src.utils.model_selector import select_model
+from src.utils.progress import init_progress, progress
 from colorama import Fore, Style
 
 # Import functions for running workflow
-from graph.workflow import get_runnable
+from src.graph.workflow import get_runnable
 
 # 调试用：加载 .env 文件
 load_dotenv()

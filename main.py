@@ -1,8 +1,8 @@
 import streamlit as st
 from dotenv import load_dotenv
 from runner import run_itinerary
-from utils.model_selector import select_model
-from utils.progress import init_progress
+from src.utils.model_selector import select_model
+from src.utils.progress import init_progress
 
 # Load environment variables
 load_dotenv()

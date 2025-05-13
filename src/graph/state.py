@@ -4,7 +4,7 @@ from typing_extensions import Annotated
 import operator
 import json
 from langchain_core.messages import BaseMessage
-from schema.itinerary import ItineraryData
+from src.schema.itinerary import ItineraryData
 
 
 def merge_dicts(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:

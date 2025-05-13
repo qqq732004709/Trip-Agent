@@ -1,7 +1,7 @@
 import pytest
-from agent.intent_agent import parse_user_input, ItineraryData
-from llm.models import ModelProvider
-from utils.progress import init_progress, progress
+from src.agent.intent_agent import parse_user_input, ItineraryData
+from src.llm.models import ModelProvider
+from src.utils.progress import init_progress, progress
 from dotenv import load_dotenv
 
 load_dotenv()

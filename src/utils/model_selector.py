@@ -1,4 +1,4 @@
-from llm.models import LLM_ORDER, get_model_info
+from src.llm.models import LLM_ORDER, get_model_info
 import os
 
 def select_model(mode: str = "cli", st=None):

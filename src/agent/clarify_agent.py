@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional
 from langchain_core.messages import AIMessage  # 改为 AIMessage
-from graph.state import AgentState
-from schema.itinerary import from_data_to_request
-from utils.progress import progress
+from src.graph.state import AgentState
+from src.schema.itinerary import from_data_to_request
+from src.utils.progress import progress
 
 # Field priority order (from highest to lowest)
 FIELD_PRIORITY = [

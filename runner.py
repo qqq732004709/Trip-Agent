@@ -1,9 +1,9 @@
 # runner.py
 
 from langchain_core.messages import HumanMessage
-from graph.workflow import get_runnable
+from src.graph.workflow import get_runnable
 from colorama import Fore, Style
-from utils.progress import progress
+from src.utils.progress import progress
 
 def run_itinerary(input_text: str, model_name: str, model_provider: str):
     """
