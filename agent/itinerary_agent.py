@@ -17,46 +17,63 @@ class ItineraryPlans(BaseModel):
     plans: List[ItineraryPlan]
 
 def itinerary_agent(state: AgentState):
-    """Creates a travel itinerary based on user preferences."""
-    progress().update_status("itinerary_agent", status="Start processing travel itinerary")
+    return state.get("data", {})
 
-    travel_details = state.get('data').get('travel_details')
-    destination = travel_details.get("destination")
-    start_date = travel_details.get("start_date")
-    end_date = travel_details.get("end_date")
-    preferences = travel_details.get("preferences", {})
+# def itinerary_agent(state: AgentState):
+#     """Creates a travel itinerary based on user preferences."""
+#     progress().update_status("itinerary_agent", status="Start processing travel itinerary")
 
-    progress().update_status("itinerary_agent", status="Validating travel request")
-    validation = validate_travel_request(travel_details)
-    if not validation["valid"]:
-        return {"error": validation["reason"]}
+#     # Access the data directly from state and handle missing fields gracefully
+#     itinerary_data = state.get('data', {})
+    
+#     # Create a dictionary with default values for each field
+#     travel_details = {
+#         "destination": itinerary_data.get("destination", "Unknown location"),
+#         "start_date": itinerary_data.get("start_date", "Not specified"),
+#         "end_date": itinerary_data.get("end_date", "Not specified"),
+#         "activity_preferences": itinerary_data.get("activity_preferences", []),
+#         "budget_level": itinerary_data.get("budget_level", "medium"),
+#         "scenery_preference": itinerary_data.get("scenery_preference", "")
+#     }
 
-    progress().update_status("itinerary_agent", status="Generating travel itinerary")
-    itinerary_output = generate_itinerary_output(
-        destination=destination,
-        start_date=start_date,
-        end_date=end_date,
-        preferences=preferences,
-        model_name=state["metadata"]["model_name"],
-        model_provider=state["metadata"]["model_provider"],
-    )
+#     progress().update_status("itinerary_agent", status="Validating travel request")
+#     validation = validate_travel_request(travel_details)
+#     if not validation["valid"]:
+#         return {"error": validation["reason"]}
 
-    progress().update_status("itinerary_agent", status="Converting itinerary to markdown")
-    # Convert itinerary to markdown format
-    itinerary_markdown = convert_plans_to_markdown(itinerary_output)
+#     # Build preferences dict for the generator from available data
+#     preferences = {
+#         "activities": travel_details["activity_preferences"],
+#         "budget": travel_details["budget_level"],
+#         "scenery": travel_details["scenery_preference"]
+#     }
 
-    # Add markdown to data
-    state["data"]["itinerary_markdown"] = itinerary_markdown
+#     progress().update_status("itinerary_agent", status="Generating travel itinerary")
+#     itinerary_output = generate_itinerary_output(
+#         destination=travel_details["destination"],
+#         start_date=travel_details["start_date"],
+#         end_date=travel_details["end_date"],
+#         preferences=preferences,
+#         model_name=state["metadata"]["model_name"],
+#         model_provider=state["metadata"]["model_provider"],
+#     )
 
-    progress().update_status("itinerary_agent", status="done")
-    # Wrap results in a single message
-    message = HumanMessage(content=json.dumps(itinerary_output.dict()), name="itinerary_agent")
+#     progress().update_status("itinerary_agent", status="Converting itinerary to markdown")
+#     # Convert itinerary to markdown format
+#     itinerary_markdown = convert_plans_to_markdown(itinerary_output)
 
-    return {"messages": [message], "data": state["data"]}
+#     # Add markdown to data
+#     state["data"]["itinerary_markdown"] = itinerary_markdown
+
+#     progress().update_status("itinerary_agent", status="done")
+#     # Wrap results in a single message
+#     message = HumanMessage(content=f"已为您生成{travel_details['destination']}的行程安排。")
+
+#     return {"messages": [message], "data": state["data"]}
 
 def validate_travel_request(request: Dict) -> Dict:
     """Validate the travel request parameters."""
-    if not request.get("destination"):
+    if not request.get("destination") or request["destination"] == "Unknown location":
         return {"valid": False, "reason": "Destination is required"}
     return {"valid": True}
 
@@ -97,9 +114,24 @@ Return in this exact JSON format:
 }}
 """
 
-
     def create_default_output():
-        return []
+        return ItineraryPlans(plans=[
+            ItineraryPlan(
+                day=1,
+                activities=["City exploration"],
+                location=destination,
+                notes="Basic sightseeing tour",
+                details={
+                    "morning": "Visit main attractions",
+                    "afternoon": "Local cuisine experience",
+                    "evening": "Rest at accommodation",
+                    "transport": "Public transportation",
+                    "dining": "Local restaurants",
+                    "cost": "Medium",
+                    "weather": "Check local forecast"
+                }
+            )
+        ])
 
     return call_llm(
         prompt=prompt,

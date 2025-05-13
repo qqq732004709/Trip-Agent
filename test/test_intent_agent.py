@@ -1,5 +1,5 @@
 import pytest
-from agent.intent_agent import parse_user_input, ItineraryRequest
+from agent.intent_agent import parse_user_input, ItineraryData
 from llm.models import ModelProvider
 from utils.progress import init_progress, progress
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ MODEL_PROVIDER = ModelProvider.DEEPSEEK
 ])
 def test_parse_user_input(user_input):
     init_progress(mode="cli")
-    result: ItineraryRequest = parse_user_input(
+    result: ItineraryData = parse_user_input(
         user_input,
         model_name=MODEL_NAME,
         model_provider=MODEL_PROVIDER
@@ -27,6 +27,6 @@ def test_parse_user_input(user_input):
     print("\n🧪 测试输入：", user_input)
     print("📦 输出结构：", result.model_dump_json())
 
-    assert isinstance(result, ItineraryRequest)
+    assert isinstance(result, ItineraryData)
     assert result.destination is not None and isinstance(result.destination, str)
     assert isinstance(result.preferences, dict)
