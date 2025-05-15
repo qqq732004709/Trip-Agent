@@ -179,3 +179,4 @@ cython_debug/
 .langgraph_api/.langgraph_retry_counter.pckl
 .langgraph_api/store.pckl
 .langgraph_api/store.vectors.pckl
+conf.yaml

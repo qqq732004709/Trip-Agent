@@ -1,14 +1,17 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
-from src.graph.state import AgentState
+from src.graph.nodes import coordinator_node
+from src.graph.state import State
 
 
 def _build_base_graph():
     """Build and return the base agent workflow graph."""
-    builder = StateGraph(AgentState)
+    builder = StateGraph(State)
     builder.add_edge(START, "coordinator")
-    builder.add_edge("coordinator", END)
+    builder.add_node(
+        "coordinator",
+        coordinator_node)
     return builder
 
 def build_graph():

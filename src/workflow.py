@@ -2,7 +2,6 @@
 
 from langchain_core.messages import HumanMessage
 from src.graph.builder import build_graph
-from colorama import Fore, Style
 
 graph = build_graph()
 def run_itinerary(input_text: str, model_name: str, model_provider: str):

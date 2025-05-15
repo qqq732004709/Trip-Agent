@@ -2,7 +2,7 @@ from langgraph.graph import MessagesState
 
 
 # Define agent state
-class AgentState(MessagesState):
+class State(MessagesState):
 
     # Runtime Variables
     locale: str = "en-US"
