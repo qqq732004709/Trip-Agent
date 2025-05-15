@@ -2,7 +2,6 @@ import streamlit as st
 from dotenv import load_dotenv
 from runner import run_itinerary
 from src.utils.model_selector import select_model
-from src.utils.progress import init_progress
 
 # Load environment variables
 load_dotenv()
@@ -34,7 +33,6 @@ if user_prompt := st.chat_input("请输入旅行需求，例如：我想去成�
     # 响应占位符
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        init_progress(mode="streamlit", st_ref=st, ui_placeholder=placeholder)
 
         try:
             # 同步调用 runner.py 中封装的流程

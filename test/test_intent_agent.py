@@ -1,7 +1,6 @@
 import pytest
 from src.agent.intent_agent import parse_user_input, ItineraryData
 from src.llm.models import ModelProvider
-from src.utils.progress import init_progress, progress
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,7 +16,6 @@ MODEL_PROVIDER = ModelProvider.DEEPSEEK
     "推荐一个地方，时间不限，喜欢美食",
 ])
 def test_parse_user_input(user_input):
-    init_progress(mode="cli")
     result: ItineraryData = parse_user_input(
         user_input,
         model_name=MODEL_NAME,

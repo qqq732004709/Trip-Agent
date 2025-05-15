@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import List, Dict
 from src.graph.state import AgentState
 from src.utils.llm import call_llm
-from src.utils.progress import progress
 from langchain_core.messages import HumanMessage
 import json
 
@@ -21,8 +20,6 @@ def itinerary_agent(state: AgentState):
 
 # def itinerary_agent(state: AgentState):
 #     """Creates a travel itinerary based on user preferences."""
-#     progress().update_status("itinerary_agent", status="Start processing travel itinerary")
-
 #     # Access the data directly from state and handle missing fields gracefully
 #     itinerary_data = state.get('data', {})
     
@@ -36,7 +33,6 @@ def itinerary_agent(state: AgentState):
 #         "scenery_preference": itinerary_data.get("scenery_preference", "")
 #     }
 
-#     progress().update_status("itinerary_agent", status="Validating travel request")
 #     validation = validate_travel_request(travel_details)
 #     if not validation["valid"]:
 #         return {"error": validation["reason"]}
@@ -48,7 +44,6 @@ def itinerary_agent(state: AgentState):
 #         "scenery": travel_details["scenery_preference"]
 #     }
 
-#     progress().update_status("itinerary_agent", status="Generating travel itinerary")
 #     itinerary_output = generate_itinerary_output(
 #         destination=travel_details["destination"],
 #         start_date=travel_details["start_date"],
@@ -58,14 +53,12 @@ def itinerary_agent(state: AgentState):
 #         model_provider=state["metadata"]["model_provider"],
 #     )
 
-#     progress().update_status("itinerary_agent", status="Converting itinerary to markdown")
 #     # Convert itinerary to markdown format
 #     itinerary_markdown = convert_plans_to_markdown(itinerary_output)
 
 #     # Add markdown to data
 #     state["data"]["itinerary_markdown"] = itinerary_markdown
 
-#     progress().update_status("itinerary_agent", status="done")
 #     # Wrap results in a single message
 #     message = HumanMessage(content=f"已为您生成{travel_details['destination']}的行程安排。")
 

@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 from langchain_core.messages import HumanMessage, AIMessage
 from src.utils.model_selector import select_model
-from src.utils.progress import init_progress, progress
 from colorama import Fore, Style
 
 # Import functions for running workflow
@@ -16,7 +15,6 @@ load_dotenv()
 def main():
     # CLI 模式选择模型
     model_name, model_provider = select_model(mode="cli")
-    init_progress(mode="cli")
     
     # 获取用户输入
     print("\n请输入旅行需求，例如：我想去杭州玩三天，喜欢美食和古镇")
@@ -40,7 +38,6 @@ def main():
 
     # 获取可运行的工作流
     runnable = get_runnable()
-    progress().start()
     
     # 运行多轮对话流程
     max_turns = 10  # 最大轮次以允许足够的澄清问题
@@ -69,9 +66,6 @@ def main():
                 clarify_question = ai_messages[-1].content
                 print(f"\n{Fore.CYAN}AI问题：{clarify_question}{Style.RESET_ALL}")
                 
-                # 暂停 progress 显示，避免干扰用户输入
-                progress().stop()
-                
                 try:
                     user_response = input(f"{Fore.GREEN}您的回答：{Style.RESET_ALL}")
                     if not user_response.strip():
@@ -81,9 +75,6 @@ def main():
                     # 处理 EOF 错误 (Ctrl+D)
                     user_response = "均衡"
                     print(f"{Fore.YELLOW}检测到输入中断，使用默认回答：{user_response}{Style.RESET_ALL}")
-                
-                # 重新启动 progress 显示
-                progress().start()
                 
                 # 将用户回答添加到消息列表
                 new_message = HumanMessage(content=user_response)
@@ -128,8 +119,6 @@ def main():
                     if isinstance(last_message, AIMessage):
                         print(f"\n{Fore.CYAN}AI回复：{last_message.content}{Style.RESET_ALL}")
             break
-    
-    progress().stop()
     
     # 检查是否是因为达到最大轮次而退出
     if current_turn >= max_turns:

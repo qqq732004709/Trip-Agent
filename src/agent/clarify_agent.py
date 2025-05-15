@@ -2,7 +2,6 @@ from typing import Dict, List, Optional
 from langchain_core.messages import AIMessage  # 改为 AIMessage
 from src.graph.state import AgentState
 from src.schema.itinerary import from_data_to_request
-from src.utils.progress import progress
 
 # Field priority order (from highest to lowest)
 FIELD_PRIORITY = [
@@ -59,11 +58,8 @@ def clarify_agent(state: AgentState) -> Dict:
     Returns:
         Dict with messages and metadata
     """
-    progress().update_status("clarify_agent", "⏳ 检查需要澄清的信息")
-    
     # Only proceed if needs_clarification is True
     if state["metadata"].get("needs_clarification") is False:
-        progress().update_status("clarify_agent", "✓ 无需澄清")
         return {
             "metadata": {
                 "needs_clarification": False
@@ -79,7 +75,6 @@ def clarify_agent(state: AgentState) -> Dict:
     
     # If no missing fields, return with needs_clarification = False
     if not missing_field:
-        progress().update_status("clarify_agent", "✅ 所有信息已完备")
         return {
             "metadata": {
                 "needs_clarification": False
@@ -88,7 +83,6 @@ def clarify_agent(state: AgentState) -> Dict:
     
     # Get question template for the missing field
     question = FIELD_QUESTIONS[missing_field]
-    progress().update_status("clarify_agent", f"❓ 需要澄清: {missing_field}")
     
     # 将返回消息类型从 HumanMessage 改为 AIMessage
     return {

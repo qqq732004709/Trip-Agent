@@ -4,7 +4,6 @@ from langchain_core.messages import AIMessage, HumanMessage
 from src.utils.llm import call_llm
 from src.graph.state import AgentState
 from src.schema.itinerary import ItineraryRequest, from_request_to_data
-from src.utils.progress import progress
 
 
 def intent_agent(state: AgentState) -> dict:
@@ -17,8 +16,6 @@ def intent_agent(state: AgentState) -> dict:
     Returns:
         更新后的状态
     """
-    progress().update_status("intent_agent", "⏳ 尝试理解用户需求")
-
     model_name = state["metadata"]["model_name"]
     model_provider = state["metadata"]["model_provider"]
 
@@ -42,7 +39,6 @@ def intent_agent(state: AgentState) -> dict:
 
     # 如果提取结果为空，说明没有旅行意图
     if not extracted.destination and not extracted.activity_preferences:
-        progress().update_status("intent_agent", "⚠️ 似乎不是旅行相关意图，终止流程")
         return {
             "data": state["data"],
             "messages": [
@@ -58,7 +54,6 @@ def intent_agent(state: AgentState) -> dict:
     
     # 信息完整，确认并进入下一阶段
     if not missing_fields:
-        progress().update_status("intent_agent", "✅ 已获取完整需求")
         return {
             "data": itinerary_data,
             "metadata": {"needs_clarification": False},
@@ -68,7 +63,6 @@ def intent_agent(state: AgentState) -> dict:
         }
     # 信息不全，标记需要澄清并返回
     else:
-        progress().update_status("intent_agent", "❓ 需求不完整，需要澄清")
         followup = generate_followup_question(missing_fields)
         return {
             "data": itinerary_data,

@@ -3,7 +3,6 @@
 import json
 from typing import TypeVar, Type, Optional, Any, Dict, Union
 from pydantic import BaseModel
-from src.utils.progress import progress
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -74,9 +73,6 @@ def call_llm(
             return result
                 
         except Exception as e:
-            if agent_name:
-                progress().update_status(agent_name, f"Error - retry {attempt + 1}/{max_retries}")
-            
             if attempt == max_retries - 1:
                 print(f"Error in LLM call after {max_retries} attempts: {e}")
                 # Use default_factory if provided, otherwise create a basic default
