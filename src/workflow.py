@@ -1,10 +1,10 @@
 # runner.py
 
 from langchain_core.messages import HumanMessage
-from src.graph.workflow import get_runnable
+from src.graph.builder import build_graph
 from colorama import Fore, Style
 
-runnable = get_runnable()
+graph = build_graph()
 def run_itinerary(input_text: str, model_name: str, model_provider: str):
     """
     构造 AgentState 并运行 itinerary agent 流程。
@@ -23,7 +23,7 @@ def run_itinerary(input_text: str, model_name: str, model_provider: str):
     }
 
     # 执行流程
-    result = runnable.invoke(state)
+    result = graph.invoke(state)
 
     # 返回行程单
     itinerary = result["data"].get("itinerary_markdown", "⚠️ 未生成行程")

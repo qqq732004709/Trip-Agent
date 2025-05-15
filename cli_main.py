@@ -7,7 +7,7 @@ from src.utils.model_selector import select_model
 from colorama import Fore, Style
 
 # Import functions for running workflow
-from src.graph.workflow import get_runnable
+from src.graph.builder import build_graph
 
 # 调试用：加载 .env 文件
 load_dotenv()
@@ -37,7 +37,7 @@ def main():
     }
 
     # 获取可运行的工作流
-    runnable = get_runnable()
+    runnable = build_graph()
     
     # 运行多轮对话流程
     max_turns = 10  # 最大轮次以允许足够的澄清问题

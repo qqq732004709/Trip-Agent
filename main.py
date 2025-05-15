@@ -1,6 +1,6 @@
 import streamlit as st
 from dotenv import load_dotenv
-from runner import run_itinerary
+from src.workflow import run_itinerary
 from src.utils.model_selector import select_model
 
 # Load environment variables
