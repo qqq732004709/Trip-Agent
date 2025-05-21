@@ -1,29 +1,59 @@
-# runner.py
-
-from langchain_core.messages import HumanMessage
+import logging
 from src.graph.builder import build_graph
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
+def enble_debug_logging():
+    logging.getLogger("src").setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+
 graph = build_graph()
-def run_itinerary(input_text: str, model_name: str, model_provider: str):
-    """
-    构造 AgentState 并运行 itinerary agent 流程。
-    """
-    # 构建初始状态
-    state = {
-        "messages": [
-            HumanMessage(content=input_text)
-        ],
-        "data": {
-        },
-        "metadata": {
-            "model_name": model_name,
-            "model_provider": model_provider
+
+
+async def run_workflow_async(
+        user_input: str,
+        max_plan_iterations: int = 5
+):
+    if not user_input:
+        raise ValueError("User input cannot be None")
+    
+    enble_debug_logging()
+
+    logger.info(f"Starting async workflow with user input: {user_input}")
+    initial_state = {
+        "messages": [{"role": "user", "content": user_input}],
+    }
+
+    config = {
+        "configurable": {
+            "thread_id":"default",
+            "max_plan_iterations": max_plan_iterations
         }
     }
 
-    # 执行流程
-    result = graph.invoke(state)
+    last_message_cnt = 0
+    async for s in graph.astream(
+        input=initial_state, config=config, stream_mode="values"
+    ):
+        try:
+            if isinstance(s, dict) and "messages" in s:
+                if len(s["messages"]) <= last_message_cnt:
+                    continue
+                last_message_cnt = len(s["messages"])
+                message = s["messages"][-1]
+                if isinstance(message, tuple):
+                    print(message)
+                else:
+                    message.pretty_print()
+            else:
+                # For any other output format
+                print(f"Output: {s}")
+        except Exception as e:
+            logger.error(f"Error processing stream output: {e}")
+            print(f"Error processing output: {str(e)}")
 
-    # 返回行程单
-    itinerary = result["data"].get("itinerary_markdown", "⚠️ 未生成行程")
-    return itinerary
+    logger.info("Async workflow completed successfully")
